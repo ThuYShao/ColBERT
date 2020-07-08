@@ -26,7 +26,7 @@ def train_tsv_formatter(_org_file, _out_file):
             if qid not in query_dict:
                 query_dict[qid] = json_obj['text_a']
             if json_obj['label'] > 0:
-                pos_para_dict[qid][pid] = json_obj['text_a']
+                pos_para_dict[qid][pid] = json_obj['text_b']
             else:
                 neg_para_dict[qid][pid] = json_obj['text_b']
     assert (len(query_dict) == len(pos_para_dict))
@@ -69,4 +69,4 @@ if __name__ == '__main__':
     org_file = '/work/shaoyunqiu/coliee_2020/data/task2/format/train_split.json'
     out_file = './data/train_triples.tsv'
     train_tsv_formatter(org_file, out_file)
-    
+
