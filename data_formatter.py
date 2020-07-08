@@ -68,3 +68,5 @@ def train_tsv_formatter(_org_file, _out_file):
 if __name__ == '__main__':
     org_file = '/work/shaoyunqiu/coliee_2020/data/task2/format/train_split.json'
     out_file = './data/train_triples.tsv'
+    train_tsv_formatter(org_file, out_file)
+    
