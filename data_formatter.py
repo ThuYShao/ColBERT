@@ -81,9 +81,24 @@ def data_check(_filename):
     print('check_done!')
 
 
+def reader_debug(_filename, _bsize, _maxsteps):
+    reader = open(_filename, 'r', encoding='utf-8')
+    for batch_idx in range(_maxsteps):
+        Batch = [reader.readline().split('\t') for _ in range(_bsize)]
+        try:
+            Batch = sorted(Batch, key=lambda x: max(len(x[1]), len(x[2])))
+        except Exception as e:
+            print(e)
+            print(batch_idx)
+            print(Batch)
+
+
 if __name__ == '__main__':
     # org_file = '/work/shaoyunqiu/coliee_2020/data/task2/format/train_split.json'
     out_file = './data/train_triples.tsv'
     # train_tsv_formatter(org_file, out_file)
-    data_check(out_file)
+    # data_check(out_file)
+    bsize = 16
+    maxstep = 400000
+    reader_debug(out_file, _bsize=bsize, _maxsteps=maxstep)
 
