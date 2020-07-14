@@ -65,8 +65,25 @@ def train_tsv_formatter(_org_file, _out_file):
     print('save train pairs in tsv, #data=%d' % tot_cnt)
 
 
+def data_check(_filename):
+    tot_cnt = 0
+    with open(_filename, encoding='utf-8') as fin:
+        while True:
+            line = fin.readline()
+            if not line:
+                break
+            tot_cnt += 1
+            x = line.strip().split('\t')
+            if len(x) != 3:
+                print(tot_cnt, len(x))
+                print(x)
+                input('continue？')
+    print('check_done!')
+
+
 if __name__ == '__main__':
-    org_file = '/work/shaoyunqiu/coliee_2020/data/task2/format/train_split.json'
+    # org_file = '/work/shaoyunqiu/coliee_2020/data/task2/format/train_split.json'
     out_file = './data/train_triples.tsv'
-    train_tsv_formatter(org_file, out_file)
+    # train_tsv_formatter(org_file, out_file)
+    data_check(out_file)
 
