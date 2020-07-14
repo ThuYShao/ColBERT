@@ -2,6 +2,7 @@ import os
 import random
 import torch
 import torch.nn as nn
+import random
 
 from argparse import ArgumentParser
 from transformers import AdamW
@@ -16,13 +17,29 @@ class TrainReader:
     def __init__(self, data_file):
         print_message("#> Training with the triples in", data_file, "...\n\n")
         self.reader = open(data_file, mode='r', encoding="utf-8")
+        self.data = self.reader.readlines()
+        self.indexs = range(len(self.data))
+        self.data_size = len(self.data)
+        self.reader.close()
+        random.shuffle(self.indexs)
 
-    def get_minibatch(self, bsize):
-        return [self.reader.readline().split('\t') for _ in range(bsize)]
+    def get_minibatch(self, batch_idx, bsize):
+        ret_lst = []
+        start_pos = batch_idx * bsize
+        if start_pos >= self.data_size:
+            random.shuffle(self.indexs)
+        for idx in range(bsize):
+            pos = (start_pos + idx) % self.data_size
+            d_idx = self.indexs[pos]
+            line = self.data[d_idx]
+            x = line.strip().split('\t')
+            assert (len(x) == 3)
+            ret_lst.append(x)
+        return ret_lst
 
 
 def manage_checkpoints(colbert, optimizer, batch_idx):
-    if batch_idx % 2000 == 0:
+    if batch_idx % 200 == 0:
         save_checkpoint("colbert.dnn", 0, batch_idx, colbert, optimizer)
 
     if batch_idx in SAVED_CHECKPOINTS:
@@ -46,9 +63,9 @@ def train(args):
 
     reader = TrainReader(args.triples)
     train_loss = 0.0
-
+    tmp_delat = 0.0
     for batch_idx in range(args.maxsteps):
-        Batch = reader.get_minibatch(args.bsize)
+        Batch = reader.get_minibatch(batch_idx, args.bsize)
         Batch = sorted(Batch, key=lambda x: max(len(x[1]), len(x[2])))
 
         for B_idx in range(args.accumsteps):
@@ -62,7 +79,8 @@ def train(args):
             out = torch.stack((colbert_out1, colbert_out2), dim=-1)
 
             positive_score, negative_score = round(colbert_out1.mean().item(), 2), round(colbert_out2.mean().item(), 2)
-            print("#>>>   ", positive_score, negative_score, '\t\t|\t\t', positive_score - negative_score)
+            tmp_delat += positive_score - negative_score
+            # print("#>>>   ", positive_score, negative_score, '\t\t|\t\t', positive_score - negative_score)
 
             loss = criterion(out, labels[:out.size(0)])
             loss = loss / args.accumsteps
@@ -75,6 +93,7 @@ def train(args):
         optimizer.step()
         optimizer.zero_grad()
 
-        print_message(batch_idx, train_loss / (batch_idx+1))
-
+        if batch_idx % 200 == 1:
+            print_message(batch_idx, train_loss / (batch_idx+1), tmp_delat / 200)
+            tmp_delat = 0
         manage_checkpoints(colbert, optimizer, batch_idx+1)
