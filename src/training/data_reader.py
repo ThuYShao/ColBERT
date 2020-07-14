@@ -41,7 +41,7 @@ class TrainReader:
 
 def manage_checkpoints(colbert, optimizer, batch_idx):
     if batch_idx % 200 == 0:
-        save_checkpoint("colbert.dnn", 0, batch_idx, colbert, optimizer)
+        save_checkpoint("colbert-", 0, batch_idx, colbert, optimizer)
 
     if batch_idx in SAVED_CHECKPOINTS:
         save_checkpoint("colbert-" + str(batch_idx) + ".dnn", 0, batch_idx, colbert, optimizer)
@@ -97,4 +97,6 @@ def train(args):
         if batch_idx % 200 == 1:
             print_message(batch_idx, train_loss / (batch_idx+1), tmp_delat / 200)
             tmp_delat = 0
-        manage_checkpoints(colbert, optimizer, batch_idx+1)
+            save_checkpoint(os.path.join(args.output_dir, "colbert-" + str(batch_idx) + ".dnn"),
+                            0, batch_idx, colbert, optimizer)
+            # manage_checkpoints(colbert, optimizer, batch_idx+1)
