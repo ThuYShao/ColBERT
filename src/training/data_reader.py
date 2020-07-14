@@ -94,7 +94,7 @@ def train(args):
         optimizer.step()
         optimizer.zero_grad()
 
-        if batch_idx % 200 == 1:
+        if (batch_idx+1) % 200 == 0:
             print_message(batch_idx, train_loss / (batch_idx+1), tmp_delat / 200)
             tmp_delat = 0
             save_checkpoint(os.path.join(args.output_dir, "colbert-" + str(batch_idx) + ".dnn"),
