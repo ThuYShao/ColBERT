@@ -3,6 +3,7 @@ import random
 import torch
 import torch.nn as nn
 import random
+import numpy as np
 
 from argparse import ArgumentParser
 from transformers import AdamW
@@ -18,8 +19,8 @@ class TrainReader:
         print_message("#> Training with the triples in", data_file, "...\n\n")
         self.reader = open(data_file, mode='r', encoding="utf-8")
         self.data = self.reader.readlines()
-        self.indexs = range(len(self.data))
         self.data_size = len(self.data)
+        self.indexs = np.arange(self.data_size, dtype=int).tolist()
         self.reader.close()
         random.shuffle(self.indexs)
 
