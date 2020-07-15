@@ -39,12 +39,12 @@ def rerank(args, query, pids, passages, index=None):
 def evaluate(args, index=None):
     qrels, queries, topK_docs, topK_pids = args.qrels, args.queries, args.topK_docs, args.topK_pids
 
-    metrics = Metrics(mrr_depths={10}, recall_depths={50, 200, 1000}, total_queries=None)
+    metrics = Metrics(mrr_depths={10}, recall_depths={50}, total_queries=None)
 
     if index:
         args.buffer = torch.zeros(1000, args.doc_maxlen, args.dim, dtype=index[0].dtype)
 
-    output_path = '.'.join([str(x) for x in [args.run_name, 'tsv', int(time.time())]])
+    output_path = '.'.join([str(x) for x in [args.run_name, 'tsv', args.checkpoint['batch']]])
     output_path = os.path.join(args.output_dir, output_path)
 
     # TODO: Save an associated metadata file with the args.input_args
@@ -56,7 +56,7 @@ def evaluate(args, index=None):
 
             for query_idx, qid in enumerate(keys):
                 query = queries[qid]
-                print_message(query_idx, qid, '\n')
+                # print_message(query_idx, qid, '\n')
 
                 if qrels and args.shortcircuit and len(set.intersection(set(qrels[qid]), set(topK_pids[qid]))) == 0:
                     continue
@@ -64,10 +64,10 @@ def evaluate(args, index=None):
                 ranking = rerank(args, query, topK_pids[qid], topK_docs[qid], index)
 
                 for i, (score, pid, passage) in enumerate(ranking):
-                    outputfile.write('\t'.join([str(x) for x in [qid, pid, i+1]]) + "\n")
+                    outputfile.write('\t'.join([str(x) for x in [qid, pid, i+1, score]]) + "\n")
 
-                    if i+1 in [1, 2, 5, 10]:
-                        print("#> " + str(i+1) + ") ", pid, ":", score)
+                    # if i+1 in [1, 2, 5, 10]:
+                    #     print("#> " + str(i+1) + ") ", pid, ":", score)
 
                 if qrels:
                     metrics.add(query_idx, qid, ranking, qrels[qid])
@@ -77,7 +77,7 @@ def evaluate(args, index=None):
                             print("\n#> Found", pid, "at position", i+1, "with score", score)
                             # print(passage)
 
-                    metrics.print_metrics(query_idx)
+                    # metrics.print_metrics(query_idx)
 
                 print_message("#> checkpoint['batch'] =", args.checkpoint['batch'], '\n')
                 print("output_path =", output_path)
