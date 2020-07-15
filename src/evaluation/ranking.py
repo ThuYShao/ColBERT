@@ -49,7 +49,7 @@ def evaluate(args, index=None):
 
     # TODO: Save an associated metadata file with the args.input_args
 
-    with open(output_path, 'w') as outputfile:
+    with open(output_path, 'w', encoding='utf-8') as outputfile:
         with torch.no_grad():
             keys = sorted(list(queries.keys()))
             random.shuffle(keys)
@@ -66,8 +66,8 @@ def evaluate(args, index=None):
                 for i, (score, pid, passage) in enumerate(ranking):
                     outputfile.write('\t'.join([str(x) for x in [qid, pid, i+1]]) + "\n")
 
-                    if i+1 in [1, 2, 5, 10, 20, 100]:
-                        print("#> " + str(i+1) + ") ", pid, ":", score, '    ', passage)
+                    if i+1 in [1, 2, 5, 10]:
+                        print("#> " + str(i+1) + ") ", pid, ":", score)
 
                 if qrels:
                     metrics.add(query_idx, qid, ranking, qrels[qid])
