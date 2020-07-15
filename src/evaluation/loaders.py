@@ -34,7 +34,7 @@ def load_topK(topK_path):
 
     print_message("#> Loading the top-k per query from", topK_path, "...")
 
-    with open(topK_path) as f:
+    with open(topK_path, encoding='utf-8') as f:
         for line in f:
             qid, pid, query, passage = line.split('\t')
             qid, pid = int(qid), int(pid)

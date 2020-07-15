@@ -25,14 +25,14 @@ def main():
     parser.add_argument('--data_dir', dest='data_dir', default=DEFAULT_DATA_DIR)
     parser.add_argument('--output_dir', dest='output_dir', default='outputs.test/')
 
-    parser.add_argument('--bsize', dest='bsize', default=128, type=int)
+    parser.add_argument('--bsize', dest='bsize', default=16, type=int)
     parser.add_argument('--subsample', dest='subsample', default=None)  # TODO: Add this
 
     # TODO: For the following four arguments, default should be None. If None, they should be loaded from checkpoint.
     parser.add_argument('--similarity', dest='similarity', default='cosine', choices=['cosine', 'l2'])
     parser.add_argument('--dim', dest='dim', default=128, type=int)
-    parser.add_argument('--query_maxlen', dest='query_maxlen', default=32, type=int)
-    parser.add_argument('--doc_maxlen', dest='doc_maxlen', default=180, type=int)
+    parser.add_argument('--query_maxlen', dest='query_maxlen', default=128, type=int)
+    parser.add_argument('--doc_maxlen', dest='doc_maxlen', default=256, type=int)
 
     args = parser.parse_args()
     args.input_arguments = args
