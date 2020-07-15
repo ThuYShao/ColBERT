@@ -65,10 +65,13 @@ def train_tsv_formatter(_org_file, _out_file):
     print('save train pairs in tsv, #data=%d' % tot_cnt)
 
 
-def dev_tsv_format(_org_file, _out_file):
+def dev_tsv_format(_org_file, _out_file_text, _out_file_label):
     # <query ID, passage ID, query text, passage text>
+    # <query ID, 0, passage ID, 1>
     tot_cnt = 0
-    fout = open(_out_file, 'w', encoding='utf-8')
+    l_cnt = 0
+    fout_t = open(_out_file_text, 'w', encoding='utf-8')
+    fout_l = open(_out_file_label, 'w', encoding='utf-8')
     with open(_org_file, encoding='utf-8') as fin:
         while True:
             line = fin.readline()
@@ -90,11 +93,17 @@ def dev_tsv_format(_org_file, _out_file):
                 para = ' '.join(p_ws[:MAX_PARA_LEN])
             else:
                 para = ' '.join(p_ws)
-            out_line = '\t'.join([qid, pid, query, para]) + '\n'
-            fout.write(out_line)
+            out_line = '\t'.join([qid, json_obj['guid'], query, para]) + '\n'
+            fout_t.write(out_line)
             tot_cnt += 1
-    fout.close()
-    print('save in file=%s, tot_cnt=%d' % (_out_file, tot_cnt))
+            if json_obj['label'] > 0:
+                out_line_l = '\t'.join([qid, str(0), json_obj['guid'], str(1)]) + '\n'
+                fout_l.write(out_line_l)
+                l_cnt += 1
+    fout_t.close()
+    fout_l.close()
+    print('save in file=%s, tot_cnt=%d' % (_out_file_text, tot_cnt))
+    print('save label in file=%s, label_cnt=%d' % (_out_file_label, l_cnt))
 
 
 def data_check(_filename):
@@ -127,12 +136,14 @@ def reader_debug(_filename, _bsize, _maxsteps):
 
 if __name__ == '__main__':
     org_file = '/work/shaoyunqiu/coliee_2020/data/task2/format/train_split.json'
-    out_file = './data/train_eval.tsv'
-    dev_tsv_format(org_file, out_file)
+    out_file_text = './data/train_eval.tsv'
+    out_file_label = './data/train_qrel.tsv'
+    dev_tsv_format(org_file, out_file_text, out_file_label)
 
     org_file = '/work/shaoyunqiu/coliee_2020/data/task2/format/dev_split.json'
-    out_file = './data/dev_eval.tsv'
-    dev_tsv_format(org_file, out_file)
+    out_file_text = './data/dev_eval.tsv'
+    out_file_label = './data/dev_qrel.tsv'
+    dev_tsv_format(org_file, out_file_text, out_file_label)
     # train_tsv_formatter(org_file, out_file)
     # data_check(out_file)
     # bsize = 16
