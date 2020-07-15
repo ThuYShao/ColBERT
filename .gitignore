@@ -10,5 +10,6 @@ temp
 notebook
 result
 output/
+outputs*/
 outputs.train/
 data/

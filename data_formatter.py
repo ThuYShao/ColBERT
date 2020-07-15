@@ -65,6 +65,38 @@ def train_tsv_formatter(_org_file, _out_file):
     print('save train pairs in tsv, #data=%d' % tot_cnt)
 
 
+def dev_tsv_format(_org_file, _out_file):
+    # <query ID, passage ID, query text, passage text>
+    tot_cnt = 0
+    fout = open(_out_file, 'w', encoding='utf-8')
+    with open(_org_file, encoding='utf-8') as fin:
+        while True:
+            line = fin.readline()
+            if not line:
+                break
+            json_obj = json.loads(line.strip())
+            qid, pid = json_obj['guid'].split('_')
+            query = json_obj['text_a']
+            para = json_obj['text_b']
+            query = re.sub('\t', ' ', query)
+            ws = query.split(' ')
+            if len(ws) > MAX_QUERY_LEN:
+                query = ' '.join(ws[:MAX_QUERY_LEN])
+            else:
+                query = ' '.join(ws)
+            para = re.sub('\t', ' ', para)
+            p_ws = para.split(' ')
+            if len(p_ws) > MAX_PARA_LEN:
+                para = ' '.join(p_ws[:MAX_PARA_LEN])
+            else:
+                para = ' '.join(p_ws)
+            out_line = '\t'.join([qid, pid, query, para]) + '\n'
+            fout.write(out_line)
+            tot_cnt += 1
+    fout.close()
+    print('save in file=%s, tot_cnt=%d' % (_out_file, tot_cnt))
+
+
 def data_check(_filename):
     tot_cnt = 0
     with open(_filename, encoding='utf-8') as fin:
@@ -94,11 +126,16 @@ def reader_debug(_filename, _bsize, _maxsteps):
 
 
 if __name__ == '__main__':
-    # org_file = '/work/shaoyunqiu/coliee_2020/data/task2/format/train_split.json'
-    out_file = './data/train_triples.tsv'
+    org_file = '/work/shaoyunqiu/coliee_2020/data/task2/format/train_split.json'
+    out_file = './data/train_eval.tsv'
+    dev_tsv_format(org_file, out_file)
+
+    org_file = '/work/shaoyunqiu/coliee_2020/data/task2/format/dev_split.json'
+    out_file = './data/dev_eval.tsv'
+    dev_tsv_format(org_file, out_file)
     # train_tsv_formatter(org_file, out_file)
     # data_check(out_file)
-    bsize = 16
-    maxstep = 400000
-    reader_debug(out_file, _bsize=bsize, _maxsteps=maxstep)
+    # bsize = 16
+    # maxstep = 400000
+    # reader_debug(out_file, _bsize=bsize, _maxsteps=maxstep)
 
