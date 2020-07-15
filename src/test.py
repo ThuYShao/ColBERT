@@ -17,7 +17,8 @@ def main():
 
     parser = ArgumentParser(description='Exhaustive (non-index-based) evaluation of re-ranking with ColBERT.')
 
-    parser.add_argument('--checkpoint', dest='checkpoint', required=True)
+    # parser.add_argument('--checkpoint', dest='checkpoint', required=True)
+    parser.add_argument('--checkpoint_dir', dest='checkpoint_dir', required=True)
     parser.add_argument('--topk', dest='topK', required=True)
     parser.add_argument('--qrels', dest='qrels', default=None)
     parser.add_argument('--shortcircuit', dest='shortcircuit', default=False, action='store_true')
@@ -51,12 +52,22 @@ def main():
     if args.qrels:
         args.qrels = os.path.join(args.data_dir, args.qrels)
 
-    args.colbert, args.checkpoint = load_colbert(args)
+
     args.qrels = load_qrels(args.qrels)
     args.queries, args.topK_docs, args.topK_pids = load_topK(args.topK)
 
-    evaluate_recall(args.qrels, args.queries, args.topK_pids)
-    evaluate(args)
+    batch_idx_all = []
+    for f in os.listdir(args.checkpoint_dir):
+        item, _ = f.split('.')
+        idx = int(item.split('-')[1])
+        batch_idx_all.append(idx)
+    batch_idx_all.sort()
+    for idx in batch_idx_all:
+        args.checkpoint = os.path.join(args.checkpoint_dir, 'colbert-%d.dnn' % idx)
+        print('now checkpoint:', args.checkpoint)
+        args.colbert, args.checkpoint = load_colbert(args)
+        # evaluate_recall(args.qrels, args.queries, args.topK_pids)
+        evaluate(args)
 
 
 if __name__ == "__main__":
