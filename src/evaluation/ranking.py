@@ -56,7 +56,7 @@ def evaluate(args, index=None):
 
             for query_idx, qid in enumerate(keys):
                 query = queries[qid]
-                print_message(query_idx, qid, query, '\n')
+                print_message(query_idx, qid, '\n')
 
                 if qrels and args.shortcircuit and len(set.intersection(set(qrels[qid]), set(topK_pids[qid]))) == 0:
                     continue
@@ -75,7 +75,7 @@ def evaluate(args, index=None):
                     for i, (score, pid, passage) in enumerate(ranking):
                         if pid in qrels[qid]:
                             print("\n#> Found", pid, "at position", i+1, "with score", score)
-                            print(passage)
+                            # print(passage)
 
                     metrics.print_metrics(query_idx)
 
