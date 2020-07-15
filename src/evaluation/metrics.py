@@ -1,8 +1,15 @@
+from collections import defaultdict
+
+
 class Metrics:
-    def __init__(self, mrr_depths: dict, recall_depths: dict, total_queries=None):
+    def __init__(self, depths, mrr_depths=None, recall_depths=None, total_queries=None):
         self.results = {}
-        self.mrr_sums = {depth: 0.0 for depth in mrr_depths}
-        self.recall_sums = {depth: 0.0 for depth in recall_depths}
+        self.depths = depths
+        self.labels = {depth: 0 for depth in depths}
+        self.correct = {depth: 0 for depth in depths}
+        self.predict = {depth: 0 for depth in depths}
+        # self.mrr_sums = {depth: 0.0 for depth in mrr_depths}
+        # self.recall_sums = {depth: 0.0 for depth in recall_depths}
         self.total_queries = total_queries
 
     def add(self, query_idx, query_key, ranking, gold_positives):
@@ -13,25 +20,48 @@ class Metrics:
 
         self.results[query_key] = ranking
 
-        positives = [i for i, (_, pid, _) in enumerate(ranking) if pid in gold_positives]
+        for depth in self.depths:
+            self.labels[depth] += len(gold_positives)
+            self.predict[depth] += min(len(ranking), depth)
+            for i, (_, pid, _) in enumerate(ranking):
+                if i >= depth:
+                    break
+                if pid in gold_positives:
+                    self.correct[depth] += 1
 
-        if len(positives) == 0:
-            return
+        # positives = [i for i, (_, pid, _) in enumerate(ranking) if pid in gold_positives]
+        #
+        # if len(positives) == 0:
+        #     return
 
-        for depth in self.mrr_sums:
-            first_positive = positives[0]
-            self.mrr_sums[depth] += (1.0 / (first_positive+1.0)) if first_positive < depth else 0.0
 
-        for depth in self.recall_sums:
-            num_positives_up_to_depth = len([pos for pos in positives if pos < depth])
-            self.recall_sums[depth] += num_positives_up_to_depth / len(gold_positives)
 
-    def print_metrics(self, query_idx):
-        for depth in sorted(self.mrr_sums):
-            print("MRR@" + str(depth), "=", self.mrr_sums[depth] / (query_idx+1.0))
+        # for depth in self.mrr_sums:
+        #     first_positive = positives[0]
+        #     self.mrr_sums[depth] += (1.0 / (first_positive+1.0)) if first_positive < depth else 0.0
+        #
+        # for depth in self.recall_sums:
+        #     num_positives_up_to_depth = len([pos for pos in positives if pos < depth])
+        #     self.recall_sums[depth] += num_positives_up_to_depth / len(gold_positives)
 
-        for depth in sorted(self.recall_sums):
-            print("Recall@" + str(depth), "=", self.recall_sums[depth] / (query_idx+1.0))
+
+    def print_metrics(self):
+        for depth in self.depths:
+            print('topK=%d, #correct=%d, #predict=%d, #label=%d' % (depth, self.correct[depth], self.predict[depth], self.labels[depth]))
+            if self.correct[depth] == 0:
+                precision = 0
+                recall = 0
+                f1 = 0
+            else:
+                precision = self.correct[depth] / self.predict[depth]
+                recall = self.correct[depth] / self.labels[depth]
+                f1 = (2 * precision * recall) / (precision + recall)
+            print('prec=%.4f, recall=%.4f, f1=%.4f' % (precision, recall, f1))
+        # for depth in sorted(self.mrr_sums):
+        #     print("MRR@" + str(depth), "=", self.mrr_sums[depth] / (query_idx+1.0))
+        #
+        # for depth in sorted(self.recall_sums):
+        #     print("Recall@" + str(depth), "=", self.recall_sums[depth] / (query_idx+1.0))
 
 
 def evaluate_recall(qrels, queries, topK_pids):

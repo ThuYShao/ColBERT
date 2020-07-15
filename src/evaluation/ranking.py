@@ -39,7 +39,7 @@ def rerank(args, query, pids, passages, index=None):
 def evaluate(args, index=None):
     qrels, queries, topK_docs, topK_pids = args.qrels, args.queries, args.topK_docs, args.topK_pids
 
-    metrics = Metrics(mrr_depths={10}, recall_depths={50}, total_queries=None)
+    metrics = Metrics(depths=[1, 2], total_queries=None)
 
     if index:
         args.buffer = torch.zeros(1000, args.doc_maxlen, args.dim, dtype=index[0].dtype)
@@ -72,13 +72,14 @@ def evaluate(args, index=None):
                 if qrels:
                     metrics.add(query_idx, qid, ranking, qrels[qid])
 
-                    for i, (score, pid, passage) in enumerate(ranking):
-                        if pid in qrels[qid]:
-                            print("#> Found", pid, "at position", i+1, "with score", score)
+                    # for i, (score, pid, passage) in enumerate(ranking):
+                    #     if pid in qrels[qid]:
+                    #         print("#> Found", pid, "at position", i+1, "with score", score)
                             # print(passage)
 
                     # metrics.print_metrics(query_idx)
 
             print_message("#> checkpoint['batch'] =", args.checkpoint['batch'], '\n')
             print("output_path =", output_path)
+            metrics.print_metrics()
             print("\n\n")
