@@ -41,7 +41,7 @@ def main():
         "Short-circuiting (i.e., applying minimal computation to queries with no positives [in the re-ranked set]) " \
         "can only be applied if qrels is provided."
 
-    args.pool = Pool(10)
+    # args.pool = Pool(10)
     args.run_name = args.topK
 
     create_directory(args.output_dir)

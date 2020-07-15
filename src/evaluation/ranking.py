@@ -74,11 +74,11 @@ def evaluate(args, index=None):
 
                     for i, (score, pid, passage) in enumerate(ranking):
                         if pid in qrels[qid]:
-                            print("\n#> Found", pid, "at position", i+1, "with score", score)
+                            print("#> Found", pid, "at position", i+1, "with score", score)
                             # print(passage)
 
                     # metrics.print_metrics(query_idx)
 
-                print_message("#> checkpoint['batch'] =", args.checkpoint['batch'], '\n')
-                print("output_path =", output_path)
-                print("\n\n")
+            print_message("#> checkpoint['batch'] =", args.checkpoint['batch'], '\n')
+            print("output_path =", output_path)
+            print("\n\n")
